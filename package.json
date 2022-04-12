@@ -9,12 +9,16 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@types/lodash": "^4.14.181",
+    "lodash": "^4.17.21",
+    "lowdb": "^3.0.0",
+    "nanoid": "^3.3.2",
     "next": "12.1.4",
     "react": "18.0.0",
     "react-dom": "18.0.0"
   },
   "devDependencies": {
-    "@types/node": "17.0.23",
+    "@types/node": "^17.0.23",
     "@types/react": "18.0.1",
     "@types/react-dom": "18.0.0",
     "eslint": "8.13.0",

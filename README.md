@@ -9,11 +9,11 @@
 
 ## `GET /api/:account_id/conversations`
 
-### Get first page:
+### Get first page
 
 `GET /api/1/conversation?pageSize=2`
 
-#### Response
+#### Response Get first page
 
 ```json
 {
@@ -55,7 +55,7 @@
 
 `GET /api/1/conversation?pageSize=2&cursor=eyJzb3J0IjoiTkVXRVNUX0ZJUlNUIiwibGFzdFNlZW4iOiIyIn0=`
 
-#### Response
+#### Response Get next page
 
 ```json
 {
@@ -80,11 +80,11 @@
 }
 ```
 
-## `GET /api/:account_id/conversation/:conversation_id`
+### `GET /api/:account_id/conversation/:conversation_id`
 
 `GET /api/1/conversation/5`
 
-#### Response
+#### Response Get conversation by id
 
 ```json
 {
@@ -104,7 +104,7 @@
 
 ## `GET /api/:account_id/conversation/:conversation_id/messages`
 
-### Get initial page:
+### Get initial page
 
 `GET /api/1/conversation/5/messages?pageSize=10`
 
@@ -135,7 +135,7 @@
 ```ts
 const { data, mutate } = useSWR(
   `/api/1/conversation/5/messages?pageSize=10`,
-  fetcher,
+  fetcher
 );
 
 // later, when optimistic update
@@ -156,7 +156,7 @@ mutate({
 });
 ```
 
-```
+```json
 // initial
 [6, 5, 4]
 next = NEWEST from 6
@@ -179,7 +179,7 @@ Add `cursor={cursor_prev}` from the last response
 
 `GET /api/1/conversation/5/messages?pageSize=2&cursor=eyJzb3J0IjoiTkVXRVNUX0ZJUlNUIiwibGFzdFNlZW4iOiIxMjQxIn0=`
 
-#### Response
+#### Response Looking for newer messages
 
 ```json
 {
@@ -209,7 +209,7 @@ Add `cursor={cursor_next}` from the last response
 
 `GET /api/1/conversation/5/messages?pageSize=2&cursor=eyJzb3J0IjoiTkVXRVNUX0ZJUlNUIiwibGFzdFNlZW4iOiIxMjQzIn0=`
 
-#### Response
+#### Response Looking for older messages
 
 ```json
 {
