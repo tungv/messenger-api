@@ -11,6 +11,8 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 
   async function getConversation() {
+    await repository.init();
+
     try {
       let { conversationId, pageSize, sort, cursor } = req.query;
       if (sort !== "NEWEST_FIRST" && sort !== "OLDEST_FIRST") {
@@ -19,19 +21,12 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
       const result = await repository.getConversations(
         conversationId as string,
-        +pageSize,
+        pageSize as string,
         sort as SORT_INDICATOR,
         cursor as string
       );
 
-      const body = {
-        rows: result.rows,
-        sort: result.sort,
-        cursor_next: result.cursor_next,
-        cursor_prev: result.cursor_prev,
-      };
-
-      return res.status(200).json(body);
+      return res.status(200).json(result);
     } catch (error) {
       return res.status(400).json({ message: error });
     }

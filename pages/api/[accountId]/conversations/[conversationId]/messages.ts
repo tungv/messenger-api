@@ -13,6 +13,8 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 
   async function getMessages() {
+    await repository.init();
+
     try {
       let { conversationId, pageSize, sort, cursor } = req.query;
       if (sort !== "NEWEST_FIRST" && sort !== "OLDEST_FIRST") {
@@ -21,25 +23,20 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
       const result = await repository.getMessages(
         conversationId as string,
-        +pageSize,
+        pageSize as string,
         sort as SORT_INDICATOR,
         cursor as string
       );
 
-      const body = {
-        rows: result.rows,
-        sort: result.sort,
-        cursor_next: result.cursor_next,
-        cursor_prev: result.cursor_prev,
-      };
-
-      return res.status(200).json(body);
+      return res.status(200).json(result);
     } catch (error) {
       return res.status(400).json({ message: error });
     }
   }
 
   async function createMessage() {
+    await repository.init();
+
     try {
       const { conversationId } = req.query;
       const { text, sentById } = req.body;
@@ -49,9 +46,8 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       }
 
       const createdMessage = await repository.createNewMessage(sentById, text, conversationId as string);
-      const locationHeader = `${req.url}/${createdMessage.id}`;
 
-      return res.setHeader("Location", locationHeader).status(201).json({ id: createdMessage.id });
+      return res.status(201).json({ data: createdMessage });
     } catch (error) {
       return res.status(400).json({ message: error });
     }

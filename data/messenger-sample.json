@@ -1,0 +1,112 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "name": "Will Smith"
+    },
+    {
+      "id": "2",
+      "name": "Jada"
+    },
+    {
+      "id": "3",
+      "name": "Jaden"
+    },
+    {
+      "id": "4",
+      "name": "Chris Rock"
+    }
+  ],
+  "messages": [
+    {
+      "id": "1",
+      "sentById": "3",
+      "text": "You \"rock\"!!!",
+      "conversationId": "1",
+      "createdAt": "1612312332312"
+    },
+    {
+      "id": "2",
+      "sentById": "1",
+      "text": "Don't do that again",
+      "conversationId": "1",
+      "createdAt": "1612312312312"
+    },
+    {
+      "id": "3",
+      "sentById": "2",
+      "text": "I love you",
+      "conversationId": "1",
+      "createdAt": "1612312312324"
+    },
+    {
+      "id": "Plm0j03pDd8uPH8_wV1kn",
+      "text": "Hello World",
+      "sentById": "1",
+      "conversationId": "2",
+      "createdAt": "1649756797681"
+    },
+    {
+      "id": "87Z3huredMOpsONZlaoO2",
+      "text": "Hello World",
+      "sentById": "1",
+      "conversationId": "2",
+      "createdAt": "1649756817807"
+    },
+    {
+      "id": "I1nGFrfxPddIcVNm_9tkz",
+      "text": "Hello World",
+      "sentById": "1",
+      "conversationId": "2",
+      "createdAt": "1649756819616"
+    },
+    {
+      "id": "l1JmJLMznjfnOSxyn9ssJ",
+      "text": "Hello World",
+      "sentById": "1",
+      "conversationId": "2",
+      "createdAt": "1649756820269"
+    },
+    {
+      "id": "EtMvqN8_Ix_aEvIV4e6wD",
+      "text": "Hello World",
+      "sentById": "1",
+      "conversationId": "2",
+      "createdAt": "1649756858062"
+    },
+    {
+      "id": "L45AwiK95Qrl_xbE-A0Ze",
+      "text": "Hello World",
+      "sentById": "1",
+      "conversationId": "2",
+      "createdAt": "1649757037326"
+    },
+    {
+      "id": "mIE-kU7Qn0fMBd7EZpmXA",
+      "text": "Hello World",
+      "sentById": "1",
+      "conversationId": "2",
+      "createdAt": "1649757101720"
+    }
+  ],
+  "conversations": [
+    {
+      "id": "1",
+      "participantIds": ["1", "2"],
+      "lastMessageId": "1",
+      "createdAt": "1649676569"
+    },
+    {
+      "id": "2",
+      "participantIds": ["1", "3"],
+      "lastMessageId": "2",
+      "createdAt": "1649676579"
+    },
+    {
+      "id": "3",
+      "participantIds": ["1", "4"],
+      "lastMessageId": "3",
+      "createdAt": "1649676589"
+    }
+  ]
+}
