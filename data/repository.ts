@@ -3,7 +3,7 @@ import { nanoid } from "nanoid";
 import { ConversationDocument, db, MessageDoc } from ".";
 import messengerSample from "./messenger-sample.json";
 import { filter, findIndex, flow, orderBy } from "lodash/fp";
-import { Conversation, Message, User } from "types/api";
+import { Conversation, Message, PaginatedResponse, User } from "types/api";
 export const DEFAULT_PAGE_SIZE = 2;
 export type SORT_INDICATOR = "NEWEST_FIRST" | "OLDEST_FIRST";
 export type CURSOR = {
@@ -39,25 +39,27 @@ export async function getConversations(
 
   const rows = sortFn(preSliceRows)
     .slice(startIndex, startIndex + pageSize)
-    .map((conversation) => {
-      // get participants from users collection
-      const participants = db.data?.users.filter((user) => conversation.participantIds.includes(user.id)) || [];
-
-      // get last messages from messages collection
-      const lastMessageId = db.data?.messages
-        .filter((message) => message.conversationId === conversation.id)
-        .sort((a, b) => (a.createdAt > b.createdAt ? -1 : 1))[0]?.id;
-
-      const lastMessage = getMessage(lastMessageId);
-
-      return {
-        id: conversation.id,
-        participants,
-        lastMessage,
-      };
-    });
+    .map(fromConversationDocToConversationAPIResponse);
 
   return getPaginatedResponse<Conversation>(sort, rows);
+}
+
+function fromConversationDocToConversationAPIResponse(doc: ConversationDocument): Conversation {
+  // get participants from users collection
+  const participants = db.data?.users.filter((user) => doc.participantIds.includes(user.id)) || [];
+
+  // get last messages from messages collection
+  const lastMessageId = db.data?.messages
+    .filter((message) => message.conversationId === doc.id)
+    .sort((a, b) => (a.createdAt > b.createdAt ? -1 : 1))[0]?.id;
+
+  const lastMessage = getMessage(lastMessageId);
+
+  return {
+    id: doc.id,
+    participants,
+    lastMessage,
+  };
 }
 
 export function getMessage(id?: string): Message | undefined {
@@ -79,51 +81,62 @@ export function getUser(id: string): User {
   return db.chain.get("users").find({ id }).value();
 }
 
+// fromMessageDocToMessageAPIResponse
+function fromMessageDocToMessageAPIResponse(doc: MessageDoc): Message {
+  return {
+    id: doc.id,
+    text: doc.text,
+    sender: getUser(doc.sentById),
+    createdAt: doc.createdAt,
+  };
+}
+
 export async function getMessages(
   conversationId: string,
   pageSize: string,
   sort: SORT_INDICATOR = "NEWEST_FIRST",
   cursor: string
-) {
-  return db.read().then(() => {
-    const _pageSize = pageSize ? parseInt(pageSize) : DEFAULT_PAGE_SIZE;
+): Promise<PaginatedResponse<Message>> {
+  await db.read();
+  const _pageSize = pageSize ? parseInt(pageSize) : DEFAULT_PAGE_SIZE;
 
-    if (cursor) {
-      const { sort, lastSeen } = JSON.parse(atob(cursor));
-
-      const orderByConditions = getOrderByConditions(sort);
-      const cursorIndex = db.chain
-        .get("messages")
-        .filter({ conversationId })
-        .orderBy(orderByConditions)
-        .findIndex((message) => message.id === lastSeen)
-        .value();
-
-      if (cursorIndex === -1) {
-        throw new Error("Invalid cursor");
-      }
-
-      const { startIdx, endIdx } = getRange(cursor, cursorIndex, _pageSize);
-      const rows = db.chain
-        .get("messages")
-        .filter({ conversationId })
-        .orderBy(orderByConditions)
-        .slice(startIdx, endIdx)
-        .value();
-
-      return getPaginatedResponse<MessageDoc>(sort, rows);
-    }
+  if (cursor) {
+    const { sort, lastSeen } = JSON.parse(atob(cursor));
 
     const orderByConditions = getOrderByConditions(sort);
+    const cursorIndex = db.chain
+      .get("messages")
+      .filter({ conversationId })
+      .orderBy(orderByConditions)
+      .findIndex((message) => message.id === lastSeen)
+      .value();
+
+    if (cursorIndex === -1) {
+      throw new Error("Invalid cursor");
+    }
+
+    const { startIdx, endIdx } = getRange(cursor, cursorIndex, _pageSize);
     const rows = db.chain
       .get("messages")
       .filter({ conversationId })
       .orderBy(orderByConditions)
-      .slice(0, _pageSize)
-      .value();
+      .slice(startIdx, endIdx)
+      .value()
+      .map(fromMessageDocToMessageAPIResponse);
 
-    return getPaginatedResponse<MessageDoc>(sort, rows);
-  });
+    return getPaginatedResponse<Message>(sort, rows);
+  }
+
+  const orderByConditions = getOrderByConditions(sort);
+  const rows = db.chain
+    .get("messages")
+    .filter({ conversationId })
+    .orderBy(orderByConditions)
+    .slice(0, _pageSize)
+    .value()
+    .map(fromMessageDocToMessageAPIResponse);
+
+  return getPaginatedResponse<Message>(sort, rows);
 }
 
 export async function createNewMessage(sentById: string, text: string, conversationId: string) {
@@ -141,10 +154,10 @@ export async function createNewMessage(sentById: string, text: string, conversat
   return newMessage;
 }
 
-export async function getConversation(id: string) {
-  return db.read().then(() => {
-    return db.chain.get("conversations").find({ id }).value();
-  });
+export async function getConversationById(id: string): Promise<Conversation> {
+  await db.read();
+
+  return fromConversationDocToConversationAPIResponse(db.chain.get("conversations").find({ id }).value());
 }
 
 export async function init() {
