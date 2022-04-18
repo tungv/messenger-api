@@ -42,9 +42,9 @@ You need to proxy your requests to the server if you use a separate domain.
         { "id": "1", "name": "Will Smith" },
         { "id": "2", "name": "Jada" }
       ],
-      "last_message": {
+      "lastMessage": {
         "id": "1000",
-        "sent_by": { "id": "1", "name": "Will Smith" },
+        "sender": { "id": "1", "name": "Will Smith" },
         "text": "I love you",
         "ts": 1612312312312
       }
@@ -55,9 +55,9 @@ You need to proxy your requests to the server if you use a separate domain.
         { "id": "1", "name": "Will Smith" },
         { "id": "3", "name": "Chris Rock" }
       ],
-      "last_message": {
+      "lastMessage": {
         "id": "1001",
-        "sent_by": { "id": "1", "name": "Will Smith" },
+        "sender": { "id": "1", "name": "Will Smith" },
         "text": "Don't do that again",
         "ts": 1612312312312
       }
@@ -84,9 +84,9 @@ You need to proxy your requests to the server if you use a separate domain.
         { "id": "1", "name": "Will Smith" },
         { "id": "3", "name": "Jaden" }
       ],
-      "last_message": {
+      "lastMessage": {
         "id": "1240",
-        "sent_by": { "id": "3", "name": "Jaden" },
+        "sender": { "id": "3", "name": "Jaden" },
         "text": "You \"rock\"!!!",
         "ts": 1612312332312
       }
@@ -111,12 +111,28 @@ You need to proxy your requests to the server if you use a separate domain.
     { "id": "1", "name": "Will Smith" },
     { "id": "3", "name": "Jaden" }
   ],
-  "last_message": {
+  "lastMessage": {
     "id": "1240",
-    "sent_by": { "id": "3", "name": "Jaden" },
+    "sender": { "id": "3", "name": "Jaden" },
     "text": "You \"rock\"!!!",
     "ts": 1612312332312
   }
+}
+```
+
+## `POST /api/account/:account_id/conversations`
+
+`POST /api/account/1/conversations?with=2`
+
+#### Response Get conversation by id
+
+```json
+{
+  "id": "5",
+  "participants": [
+    { "id": "1", "name": "Will Smith" },
+    { "id": "2", "name": "Jada" }
+  ]
 }
 ```
 
@@ -133,13 +149,13 @@ You need to proxy your requests to the server if you use a separate domain.
   "rows": [
     {
       "id": "1241",
-      "sent_by": { "id": "3", "name": "Jaden" },
+      "sender": { "id": "3", "name": "Jaden" },
       "text": "You \"rock\"!!!",
       "ts": 1612312332312
     },
     {
       "id": "1240",
-      "sent_by": { "id": "3", "name": "Jaden" },
+      "sender": { "id": "3", "name": "Jaden" },
       "text": "You \"rock\"!!!",
       "ts": 1612312332312
     }
@@ -201,13 +217,13 @@ Add `cursor={cursor_prev}` from the last response
   "rows": [
     {
       "id": "1243",
-      "sent_by": { "id": "3", "name": "Jaden" },
+      "sender": { "id": "3", "name": "Jaden" },
       "text": "You \"rock\"!!!",
       "ts": 1612312332312
     },
     {
       "id": "1242",
-      "sent_by": { "id": "3", "name": "Jaden" },
+      "sender": { "id": "3", "name": "Jaden" },
       "text": "You \"rock\"!!!",
       "ts": 1612312332312
     }
@@ -231,13 +247,13 @@ Add `cursor={cursor_next}` from the last response
   "rows": [
     {
       "id": "1238",
-      "sent_by": { "id": "3", "name": "Jaden" },
+      "sender": { "id": "3", "name": "Jaden" },
       "text": "You \"rock\"!!!",
       "ts": 1612312332312
     },
     {
       "id": "1239",
-      "sent_by": { "id": "3", "name": "Jaden" },
+      "sender": { "id": "3", "name": "Jaden" },
       "text": "You \"rock\"!!!",
       "ts": 1612312332312
     }
