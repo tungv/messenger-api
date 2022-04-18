@@ -116,6 +116,14 @@
       ],
       "lastMessageId": "3",
       "createdAt": "1649676589"
+    },
+    {
+      "id": "4UXvbN4foa3KMW1fg9XcP",
+      "participantIds": [
+        "1",
+        "2"
+      ],
+      "createdAt": "1650304519564"
     }
   ]
 }

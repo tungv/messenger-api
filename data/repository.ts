@@ -12,6 +12,20 @@ export type CURSOR = {
   sort: SORT_INDICATOR;
 };
 
+export async function createNewConversation(accountId: string, user2: string) {
+  const conversation: ConversationDocument = {
+    id: nanoid(),
+    participantIds: [accountId, user2],
+    createdAt: String(Date.now()),
+  };
+
+  await init();
+  db.data?.conversations.push(conversation);
+  await db.write();
+
+  return fromConversationDocToConversationAPIResponse(conversation);
+}
+
 export async function getConversations(
   accountId: string,
   pageSize: number = DEFAULT_PAGE_SIZE,

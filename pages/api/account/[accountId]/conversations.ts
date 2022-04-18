@@ -1,11 +1,17 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
 import * as repository from "data/repository";
+import { nanoid } from "nanoid";
+import { ConversationDocument, db } from "data";
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   switch (req.method) {
     case "GET":
       return getConversations(req, res);
+
+    case "POST":
+      return createConversation(req, res);
+
     default:
       return res.status(405).end(`Method ${req.method} Not Allowed`);
   }
@@ -31,4 +37,18 @@ async function getConversations(req: NextApiRequest, res: NextApiResponse) {
   } catch (error) {
     return res.status(400).json({ message: error });
   }
+}
+
+// create Conversation
+async function createConversation(req: NextApiRequest, res: NextApiResponse) {
+  const user1 = req.query.accountId as string;
+  const user2 = req.query.with as string;
+
+  if (user1 === user2) {
+    return res.status(400).json({ message: "You can't chat with yourself" });
+  }
+
+  const conversation = await repository.createNewConversation(user1, user2);
+
+  return res.status(201).json({ data: conversation });
 }

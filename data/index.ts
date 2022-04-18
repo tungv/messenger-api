@@ -9,7 +9,6 @@ interface User {
 export interface ConversationDocument {
   id: string;
   participantIds: string[];
-  lastMessageId: string;
   createdAt: string;
 }
 
