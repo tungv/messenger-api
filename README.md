@@ -263,3 +263,20 @@ Add `cursor={cursor_next}` from the last response
   "cursor_prev": "eyJzb3J0IjoiTkVXRVNUX0ZJUlNUIiwibGFzdFNlZW4iOiIxMjQzIn0="
 }
 ```
+
+## `POST /api/account/:account_id/conversation/:conversation_id/messages`
+
+`POST /api/account/3/conversation/5/messages`
+
+Body: `{ "text": "hi there" }`
+
+#### Response
+
+```json
+{
+  "id": "1245",
+  "sender": { "id": "3", "name": "Jaden" },
+  "text": "hi there",
+  "ts": 1612312332312
+}
+```
