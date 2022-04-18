@@ -160,6 +160,12 @@ export async function getConversationById(id: string): Promise<Conversation> {
   return fromConversationDocToConversationAPIResponse(db.chain.get("conversations").find({ id }).value());
 }
 
+export async function getAccountById(id: string): Promise<User> {
+  await db.read();
+
+  return db.chain.get("users").find({ id }).value();
+}
+
 export async function init() {
   if (db.data === null) {
     db.data = messengerSample;
