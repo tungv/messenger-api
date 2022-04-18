@@ -1,11 +1,13 @@
 # messenger-api
 
-| API prevpoint                                                          | description                            | sample data               |
-| ---------------------------------------------------------------------- | -------------------------------------- | ------------------------- |
-| `GET /api/account/:account_id/conversations`                           | get a list of conversations            | `Paginated<Conversation>` |
-| `GET /api/account/:account_id/conversation/:conversation_id`           | information of a specific conversation | `Conversation`            |
-| `GET /api/account/:account_id/conversation/:conversation_id/messages`  | list of messages                       | `Paginated<Message>`      |
-| `POST /api/account/:account_id/conversation/:conversation_id/messages` | create a new messages                  | `Message`                 |
+| API prevpoint                                                          | description                            | sample data                 |
+| ---------------------------------------------------------------------- | -------------------------------------- | --------------------------- |
+| `GET /api/accounts`                                                    | Get list of accounts                   | `{ "accounts": Account[] }` |
+| `GET /api/account/:account_id`                                         | Get current account                    | `Account`                   |
+| `GET /api/account/:account_id/conversations`                           | get a list of conversations            | `Paginated<Conversation>`   |
+| `GET /api/account/:account_id/conversation/:conversation_id`           | information of a specific conversation | `Conversation`              |
+| `GET /api/account/:account_id/conversation/:conversation_id/messages`  | list of messages                       | `Paginated<Message>`        |
+| `POST /api/account/:account_id/conversation/:conversation_id/messages` | create a new messages                  | `Message`                   |
 
 ## `GET /api/account/:account_id/conversations`
 
