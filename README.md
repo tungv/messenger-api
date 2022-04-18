@@ -1,13 +1,13 @@
 # messenger-api
 
-| API prevpoint                                                  | description                            | sample data               |
-| -------------------------------------------------------------- | -------------------------------------- | ------------------------- |
-| `GET /api/:account_id/conversations`                           | get a list of conversations            | `Paginated<Conversation>` |
-| `GET /api/:account_id/conversation/:conversation_id`           | information of a specific conversation | `Conversation`            |
-| `GET /api/:account_id/conversation/:conversation_id/messages`  | list of messages                       | `Paginated<Message>`      |
-| `POST /api/:account_id/conversation/:conversation_id/messages` | create a new messages                  | `Message`                 |
+| API prevpoint                                                          | description                            | sample data               |
+| ---------------------------------------------------------------------- | -------------------------------------- | ------------------------- |
+| `GET /api/account/:account_id/conversations`                           | get a list of conversations            | `Paginated<Conversation>` |
+| `GET /api/account/:account_id/conversation/:conversation_id`           | information of a specific conversation | `Conversation`            |
+| `GET /api/account/:account_id/conversation/:conversation_id/messages`  | list of messages                       | `Paginated<Message>`      |
+| `POST /api/account/:account_id/conversation/:conversation_id/messages` | create a new messages                  | `Message`                 |
 
-## `GET /api/:account_id/conversations`
+## `GET /api/account/:account_id/conversations`
 
 ### Get first page
 
@@ -80,7 +80,7 @@
 }
 ```
 
-### `GET /api/:account_id/conversation/:conversation_id`
+### `GET /api/account/:account_id/conversation/:conversation_id`
 
 `GET /api/1/conversation/5`
 
@@ -102,7 +102,7 @@
 }
 ```
 
-## `GET /api/:account_id/conversation/:conversation_id/messages`
+## `GET /api/account/:account_id/conversation/:conversation_id/messages`
 
 ### Get initial page
 
@@ -133,10 +133,7 @@
 ```
 
 ```ts
-const { data, mutate } = useSWR(
-  `/api/1/conversation/5/messages?pageSize=10`,
-  fetcher
-);
+const { data, mutate } = useSWR(`/api/1/conversation/5/messages?pageSize=10`, fetcher);
 
 // later, when optimistic update
 // received newer messages
