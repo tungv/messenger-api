@@ -6,14 +6,14 @@ interface User {
   name: string;
 }
 
-export interface Conversation {
+export interface ConversationDocument {
   id: string;
   participantIds: string[];
   lastMessageId: string;
   createdAt: string;
 }
 
-export interface Message {
+export interface MessageDoc {
   id: string;
   text: string;
   sentById: string;
@@ -23,8 +23,8 @@ export interface Message {
 
 type Database = {
   users: Array<User>;
-  messages: Array<Message>;
-  conversations: Array<Conversation>;
+  messages: Array<MessageDoc>;
+  conversations: Array<ConversationDocument>;
 };
 
 class LowWithLodash<T> extends Low<T> {

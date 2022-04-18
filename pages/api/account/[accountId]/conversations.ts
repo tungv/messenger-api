@@ -15,17 +15,17 @@ async function getConversations(req: NextApiRequest, res: NextApiResponse) {
   await repository.init();
 
   try {
-    let { conversationId, pageSize, sort, cursor } = req.query;
+    const accountId = req.query.accountId as string;
+    const cursor = req.query.cursor as string;
+    let sort = req.query.sort as repository.SORT_INDICATOR;
+
     if (sort !== "NEWEST_FIRST" && sort !== "OLDEST_FIRST") {
       sort = "NEWEST_FIRST";
     }
 
-    const result = await repository.getConversations(
-      conversationId as string,
-      pageSize as string,
-      sort as repository.SORT_INDICATOR,
-      cursor as string
-    );
+    const pageSize = Number.parseInt(req.query.pageSize as string, 10) || 10;
+
+    const result = await repository.getConversations(accountId, pageSize, sort, cursor);
 
     return res.status(200).json(result);
   } catch (error) {

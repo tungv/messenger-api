@@ -1,8 +1,9 @@
 import { nanoid } from "nanoid";
 
-import { Conversation, db, Message } from ".";
+import { ConversationDocument, db, MessageDoc } from ".";
 import messengerSample from "./messenger-sample.json";
-
+import { filter, findIndex, flow, orderBy } from "lodash/fp";
+import { Conversation, Message, User } from "types/api";
 export const DEFAULT_PAGE_SIZE = 2;
 export type SORT_INDICATOR = "NEWEST_FIRST" | "OLDEST_FIRST";
 export type CURSOR = {
@@ -12,50 +13,70 @@ export type CURSOR = {
 };
 
 export async function getConversations(
-  conversationId: string,
-  pageSize: string,
+  accountId: string,
+  pageSize: number = DEFAULT_PAGE_SIZE,
   sort: SORT_INDICATOR = "NEWEST_FIRST",
   cursor: string
 ) {
-  return db.read().then(() => {
-    const _pageSize = pageSize ? parseInt(pageSize) : DEFAULT_PAGE_SIZE;
+  await db.read();
 
-    if (cursor) {
-      const { sort, lastSeen } = JSON.parse(atob(cursor));
+  const filterFn = filter<ConversationDocument>((conversation) => conversation.participantIds.includes(accountId));
 
-      const orderByConditions = getOrderByConditions(sort);
-      const cursorIndex = db.chain
-        .get("conversations")
-        .filter({ id: conversationId })
-        .orderBy(orderByConditions)
-        .findIndex((message) => message.id === lastSeen)
-        .value();
+  const preSliceRows = filterFn(db.data?.conversations);
 
-      if (cursorIndex === -1) {
-        throw new Error("Invalid cursor");
-      }
+  let finalSort = sort;
+  let startIndex = 0;
 
-      const { startIdx, endIdx } = getRange(cursor, cursorIndex, _pageSize);
-      const rows = db.chain
-        .get("conversations")
-        .filter({ id: conversationId })
-        .orderBy(orderByConditions)
-        .slice(startIdx, endIdx)
-        .value();
+  // if cursor is present, change startIndex and finalSort to match cursor
+  if (cursor) {
+    const { sort, lastSeen } = JSON.parse(atob(cursor)) as { sort: SORT_INDICATOR; lastSeen: string };
+    finalSort = sort;
+    startIndex = findIndex<ConversationDocument>((conversation) => conversation.id === lastSeen, preSliceRows);
+  }
 
-      return getPaginatedResponse<Conversation>(sort, rows);
-    }
+  const orderByConditions = getOrderByConditions(sort);
+  const sortFn = orderBy<ConversationDocument>([orderByConditions[0]], [orderByConditions[1]]);
 
-    const orderByConditions = getOrderByConditions(sort);
-    const rows = db.chain
-      .get("conversations")
-      .filter({ id: conversationId })
-      .orderBy(orderByConditions)
-      .slice(0, _pageSize)
-      .value();
+  const rows = sortFn(preSliceRows)
+    .slice(startIndex, startIndex + pageSize)
+    .map((conversation) => {
+      // get participants from users collection
+      const participants = db.data?.users.filter((user) => conversation.participantIds.includes(user.id)) || [];
 
-    return getPaginatedResponse<Conversation>(sort, rows);
-  });
+      // get last messages from messages collection
+      const lastMessageId = db.data?.messages
+        .filter((message) => message.conversationId === conversation.id)
+        .sort((a, b) => (a.createdAt > b.createdAt ? -1 : 1))[0]?.id;
+
+      const lastMessage = getMessage(lastMessageId);
+
+      return {
+        id: conversation.id,
+        participants,
+        lastMessage,
+      };
+    });
+
+  return getPaginatedResponse<Conversation>(sort, rows);
+}
+
+export function getMessage(id?: string): Message | undefined {
+  if (!id) {
+    return;
+  }
+  const msg = db.chain.get("messages").find({ id }).value();
+
+  return {
+    id: msg.id,
+    text: msg.text,
+    sender: getUser(msg.sentById),
+    createdAt: msg.createdAt,
+  };
+}
+
+// get user
+export function getUser(id: string): User {
+  return db.chain.get("users").find({ id }).value();
 }
 
 export async function getMessages(
@@ -90,7 +111,7 @@ export async function getMessages(
         .slice(startIdx, endIdx)
         .value();
 
-      return getPaginatedResponse<Message>(sort, rows);
+      return getPaginatedResponse<MessageDoc>(sort, rows);
     }
 
     const orderByConditions = getOrderByConditions(sort);
@@ -101,7 +122,7 @@ export async function getMessages(
       .slice(0, _pageSize)
       .value();
 
-    return getPaginatedResponse<Message>(sort, rows);
+    return getPaginatedResponse<MessageDoc>(sort, rows);
   });
 }
 
@@ -133,7 +154,7 @@ export async function init() {
   }
 }
 
-function getOrderByConditions(sort: SORT_INDICATOR) {
+function getOrderByConditions(sort: SORT_INDICATOR): [string, "desc" | "asc"] {
   return sort === "NEWEST_FIRST" ? ["createdAt", "desc"] : ["createdAt", "asc"];
 }
 
