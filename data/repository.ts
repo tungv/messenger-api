@@ -151,7 +151,7 @@ export async function createNewMessage(sentById: string, text: string, conversat
   db.data?.messages.push(newMessage);
   await db.write();
 
-  return newMessage;
+  return fromMessageDocToMessageAPIResponse(newMessage);
 }
 
 export async function getConversationById(id: string): Promise<Conversation> {

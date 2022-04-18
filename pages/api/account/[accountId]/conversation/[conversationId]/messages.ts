@@ -39,7 +39,8 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
     try {
       const { conversationId } = req.query;
-      const { text, sentById } = req.body;
+      const { text } = req.body;
+      const sentById = req.query.accountId as string;
 
       if (!sentById || !text || !conversationId) {
         return res.status(400).json({ message: "Missing required fields" });
