@@ -1,5 +1,20 @@
 # messenger-api
 
+## Getting started
+
+```
+npm i
+```
+
+```
+npm run dev
+```
+
+It will start an HTTP server on port 3000.
+You need to proxy your requests to the server if you use a separate domain.
+
+# API documentation
+
 | API prevpoint                                                          | description                            | sample data                 |
 | ---------------------------------------------------------------------- | -------------------------------------- | --------------------------- |
 | `GET /api/accounts`                                                    | Get list of accounts                   | `{ "accounts": Account[] }` |
