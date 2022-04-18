@@ -11,7 +11,7 @@ export type CURSOR = {
   sort: SORT_INDICATOR;
 };
 
-async function getConversations(
+export async function getConversations(
   conversationId: string,
   pageSize: string,
   sort: SORT_INDICATOR = "NEWEST_FIRST",
@@ -58,7 +58,7 @@ async function getConversations(
   });
 }
 
-async function getMessages(
+export async function getMessages(
   conversationId: string,
   pageSize: string,
   sort: SORT_INDICATOR = "NEWEST_FIRST",
@@ -105,7 +105,7 @@ async function getMessages(
   });
 }
 
-async function createNewMessage(sentById: string, text: string, conversationId: string) {
+export async function createNewMessage(sentById: string, text: string, conversationId: string) {
   const newMessage = {
     id: nanoid(),
     text,
@@ -120,13 +120,13 @@ async function createNewMessage(sentById: string, text: string, conversationId: 
   return newMessage;
 }
 
-async function getConversation(id: string) {
+export async function getConversation(id: string) {
   return db.read().then(() => {
     return db.chain.get("conversations").find({ id }).value();
   });
 }
 
-async function init() {
+export async function init() {
   if (db.data === null) {
     db.data = messengerSample;
     await db.write();
@@ -164,13 +164,3 @@ function getPaginatedResponse<T extends { id: string }>(sort: SORT_INDICATOR, ro
     cursor_prev: rows.length > 0 ? btoa(JSON.stringify(cursorPrev)) : null,
   };
 }
-
-const repository = {
-  getMessages,
-  getConversation,
-  createNewMessage,
-  getConversations,
-  init,
-};
-
-export default repository;

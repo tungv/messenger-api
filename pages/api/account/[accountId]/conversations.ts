@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
-import repository, { SORT_INDICATOR } from "data/repository";
+import * as repository from "data/repository";
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   switch (req.method) {
@@ -23,7 +23,7 @@ async function getConversations(req: NextApiRequest, res: NextApiResponse) {
     const result = await repository.getConversations(
       conversationId as string,
       pageSize as string,
-      sort as SORT_INDICATOR,
+      sort as repository.SORT_INDICATOR,
       cursor as string
     );
 
