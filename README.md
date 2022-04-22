@@ -2,6 +2,8 @@
 
 ## Getting started
 
+Requirements: Node.js version 16+
+
 ```
 npm i
 ```
