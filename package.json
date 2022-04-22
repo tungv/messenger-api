@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "axios": "^0.26.1",
     "lodash": "^4.17.21",
     "lowdb": "^3.0.0",
     "nanoid": "^3.3.2",
