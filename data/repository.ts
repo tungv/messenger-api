@@ -4,7 +4,7 @@ import { ConversationDocument, db, MessageDoc } from ".";
 import messengerSample from "./messenger-sample.json";
 import { filter, findIndex, flow, orderBy } from "lodash/fp";
 import { Conversation, Message, PaginatedResponse, User } from "types/api";
-export const DEFAULT_PAGE_SIZE = 2;
+export const DEFAULT_PAGE_SIZE = 10;
 export type SORT_INDICATOR = "NEWEST_FIRST" | "OLDEST_FIRST";
 export type CURSOR = {
   direction: "next" | "prev";
@@ -142,6 +142,10 @@ export async function getMessages(
   }
 
   const orderByConditions = getOrderByConditions(sort);
+
+  console.log(db.data?.messages.filter((message) => message.conversationId === conversationId));
+  console.log(_pageSize);
+
   const rows = db.chain
     .get("messages")
     .filter({ conversationId })
