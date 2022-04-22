@@ -7,7 +7,9 @@ npm i
 ```
 
 ```
-npm run dev
+## Run as production server
+npm run build
+npm start
 ```
 
 It will start an HTTP server on port 3000.
