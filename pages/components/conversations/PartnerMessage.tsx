@@ -1,19 +1,12 @@
 import Image from "next/image";
+import { Message } from "types/api";
 
 const formatDate = (createdAt: string) => {
   const timestamp = parseInt(createdAt);
   return new Date(timestamp).toUTCString();
 };
 
-const PartnerMessage = ({
-  message,
-  sender,
-  createdAt,
-}: {
-  message: string;
-  sender: { name: string };
-  createdAt: string;
-}) => {
+const PartnerMessage = ({ message: { text, sender, createdAt } }: { message: Message }) => {
   return (
     <>
       <style jsx>
@@ -66,7 +59,7 @@ const PartnerMessage = ({
               objectFit="cover"
             />
           </div>
-          <div className="partner-message">{message}</div>
+          <div className="partner-message">{text}</div>
         </div>
       </div>
     </>

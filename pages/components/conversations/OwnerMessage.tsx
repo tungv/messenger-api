@@ -1,19 +1,12 @@
 import Image from "next/image";
+import { Message } from "types/api";
 
 const formatDate = (createdAt: string) => {
   const timestamp = parseInt(createdAt);
   return new Date(timestamp).toUTCString();
 };
 
-const OwnerMessage = ({
-  message,
-  sender,
-  createdAt,
-}: {
-  message: string;
-  sender: { name: string };
-  createdAt: string;
-}) => {
+const OwnerMessage = ({ message: { text, sender, createdAt } }: { message: Message }) => {
   return (
     <>
       <style jsx>
@@ -65,7 +58,7 @@ const OwnerMessage = ({
       <div className="owner-message-wrapper">
         <div className="owner-send-date">{formatDate(createdAt)}</div>
         <div className="owner-message-container">
-          <div className="owner-message">{message}</div>
+          <div className="owner-message">{text}</div>
           <div className="owner-avatar">
             <Image
               src={`https://robohash.org/${sender.name}`}

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { Conversation } from "types/api";
+import { Conversation, Message } from "types/api";
 import { useConversations, useMessages } from "../../../utils/hooks";
 import OwnerMessage from "./OwnerMessage";
 import PartnerMessage from "./PartnerMessage";
@@ -193,11 +193,11 @@ const Conversation = ({ goAccountSelection, accountId }: { accountId: string; go
           </div>
           <div className="conversation-container">
             {messages &&
-              messages.rows.map(({ id, sender, text, createdAt }) =>
-                sender.id === accountId ? (
-                  <OwnerMessage key={id} sender={sender} message={text} createdAt={createdAt} />
+              messages.rows.map((message: Message) =>
+                message.sender.id === accountId ? (
+                  <OwnerMessage key={message.id} message={message} />
                 ) : (
-                  <PartnerMessage key={id} sender={sender} message={text} createdAt={createdAt} />
+                  <PartnerMessage key={message.id} message={message} />
                 )
               )}
           </div>
