@@ -1,5 +1,6 @@
-import { useConversations, useMessages } from "../../utils/hooks";
-import { OwnerMessage, PartnerMessage } from "./Message";
+import { useConversations, useMessages } from "../../../utils/hooks";
+import OwnerMessage from "./OwnerMessage";
+import PartnerMessage from "./PartnerMessage";
 
 const Conversation = ({ goAccountSelection, accountId }: { accountId: string; goAccountSelection: () => void }) => {
   const conversations = useConversations({ accountId });
