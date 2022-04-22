@@ -143,9 +143,6 @@ export async function getMessages(
 
   const orderByConditions = getOrderByConditions(sort);
 
-  console.log(db.data?.messages.filter((message) => message.conversationId === conversationId));
-  console.log(_pageSize);
-
   const rows = db.chain
     .get("messages")
     .filter({ conversationId })
