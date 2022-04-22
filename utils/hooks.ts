@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 
-import { RequestConversations, Conversations, RequestMessages, Messages } from "./types";
+import { RequestConversations, RequestMessages } from "./types";
+import { PaginatedResponse, Conversation, Message } from "../types/api";
 import { getConversations, getMessages } from "./services";
 
 export const useConversations = ({ accountId }: RequestConversations) => {
-  const [conversations, setConversations] = useState<Conversations | null>(null);
+  const [conversations, setConversations] = useState<PaginatedResponse<Conversation> | null>(null);
 
   useEffect(() => {
     getConversations({ accountId })
@@ -20,7 +21,7 @@ export const useConversations = ({ accountId }: RequestConversations) => {
 };
 
 export const useMessages = ({ accountId, conversationId }: RequestMessages) => {
-  const [messages, setMessages] = useState<Messages | null>(null);
+  const [messages, setMessages] = useState<PaginatedResponse<Message> | null>(null);
 
   useEffect(() => {
     getMessages({ accountId, conversationId })

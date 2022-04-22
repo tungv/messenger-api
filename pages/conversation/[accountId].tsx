@@ -8,7 +8,7 @@ const Conversation: NextPage = () => {
   const { accountId } = router.query;
   const id = accountId ? accountId.toString() : "";
 
-  return <Conversations goAccountSelection={() => router.push("/")} accountId={id} />;
+  return id ? <Conversations goAccountSelection={() => router.push("/")} accountId={id} /> : null;
 };
 
 export default Conversation;
