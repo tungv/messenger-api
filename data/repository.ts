@@ -7,7 +7,6 @@ import { Conversation, Message, PaginatedResponse, User } from "types/api";
 export const DEFAULT_PAGE_SIZE = 10;
 export type SORT_INDICATOR = "NEWEST_FIRST" | "OLDEST_FIRST";
 export type CURSOR = {
-  direction: "next" | "prev";
   lastSeen?: string;
   sort: SORT_INDICATOR;
 };
@@ -117,11 +116,13 @@ export async function getMessages(
   if (cursor) {
     const { sort, lastSeen } = JSON.parse(atob(cursor));
 
+    console.log({ sort, lastSeen });
+
     const orderByConditions = getOrderByConditions(sort);
     const cursorIndex = db.chain
       .get("messages")
       .filter({ conversationId })
-      .orderBy(orderByConditions)
+      .orderBy(...orderByConditions)
       .findIndex((message) => message.id === lastSeen)
       .value();
 
@@ -133,7 +134,7 @@ export async function getMessages(
     const rows = db.chain
       .get("messages")
       .filter({ conversationId })
-      .orderBy(orderByConditions)
+      .orderBy(...orderByConditions)
       .slice(startIdx, endIdx)
       .value()
       .map(fromMessageDocToMessageAPIResponse);
@@ -146,10 +147,12 @@ export async function getMessages(
   const rows = db.chain
     .get("messages")
     .filter({ conversationId })
-    .orderBy(orderByConditions)
+    .orderBy(...orderByConditions)
     .slice(0, _pageSize)
     .value()
     .map(fromMessageDocToMessageAPIResponse);
+
+  console.log({ rows });
 
   return getPaginatedResponse<Message>(sort, rows);
 }
@@ -209,8 +212,8 @@ function getRange(cursor: string, cursorIndex: number, pageSize: number) {
 }
 
 function getPaginatedResponse<T extends { id: string }>(sort: SORT_INDICATOR, rows: Array<T>) {
-  const cursorNext: CURSOR = { sort, lastSeen: rows[rows.length - 1]?.id, direction: "next" };
-  const cursorPrev: CURSOR = { sort, lastSeen: rows[0]?.id, direction: "prev" };
+  const cursorNext: CURSOR = { sort, lastSeen: rows[0]?.id };
+  const cursorPrev: CURSOR = { sort, lastSeen: rows[rows.length - 1]?.id };
 
   return {
     sort,
