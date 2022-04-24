@@ -61,7 +61,7 @@ export default withDefaultDb(
     async GET(req, res) {
       const conversationId = req.query.conversationId as string;
 
-      const pageSize = req.query.pageSize as string;
+      const pageSize = (req.query.pageSize as string) || "10";
 
       const supabase = getClient();
 
