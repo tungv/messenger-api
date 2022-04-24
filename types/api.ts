@@ -1,5 +1,3 @@
-import { SORT_INDICATOR } from "data/repository";
-
 export interface Conversation {
   id: string;
   participants: User[];
@@ -16,11 +14,4 @@ export interface Message {
   text: string;
   sender: User;
   createdAt: string;
-}
-
-export interface PaginatedResponse<T> {
-  rows: T[];
-  sort: SORT_INDICATOR;
-  cursor_next: string | null;
-  cursor_prev: string | null;
 }
