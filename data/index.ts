@@ -4,9 +4,10 @@ interface User {
 }
 
 export interface ConversationDocument {
-  id: string;
-  participantIds: string[];
+  id: number;
   createdAt: string;
+  participant_1: string;
+  participant_2: string;
 }
 
 export interface MessageDoc {
