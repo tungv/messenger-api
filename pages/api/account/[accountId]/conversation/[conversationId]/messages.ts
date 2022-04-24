@@ -72,12 +72,10 @@ export default withDefaultDb(
       const maybeSort = maybeParsedCursor.map((cursor) => cursor.sort);
       const maybeLastSeen = maybeParsedCursor.map((cursor) => Number.parseInt(cursor.lastSeen));
 
-      const sort = maybeSort.map((s) => (s === "NEWEST_FIRST" ? { ascending: false } : { ascending: true }))[0] || {
-        ascending: false,
-      };
+      const isNewestFirst = maybeSort.map((s) => s === "NEWEST_FIRST")[0] ?? true;
 
       const condition = maybeLastSeen.map((lastSeen) => {
-        return ["gt" as const, lastSeen] as const;
+        return [isNewestFirst ? "gt" : "lt", lastSeen] as const;
       })[0] || ["gt", 0];
 
       // fetch message
@@ -94,10 +92,9 @@ export default withDefaultDb(
             )
           `
         )
-        .eq("conversationId", conversationId)
-        .order("createdAt", sort);
+        .eq("conversationId", conversationId);
 
-      query[condition[0]]("id", condition[1]);
+      query[condition[0]]("id", condition[1]).order("createdAt", { ascending: false });
 
       const { data, error } = await query.limit(Number.parseInt(pageSize));
 
@@ -107,14 +104,20 @@ export default withDefaultDb(
         return;
       }
 
+      if (!isNewestFirst) {
+        data.reverse();
+      }
+
       const nextLastSeen = data[0] ? data[0].id : maybeLastSeen[0] || 0;
       const prevLastSeen = data[0] ? data[data.length - 1].id : maybeLastSeen[0] || 0;
+      const nextDirection = isNewestFirst ? "NEWEST_FIRST" : "OLDEST_FIRST";
+      const prevDirection = isNewestFirst ? "OLDEST_FIRST" : "NEWEST_FIRST";
 
       res.status(200).json({
-        sort: "NEWEST_FIRST",
+        sort: isNewestFirst ? "NEWEST_FIRST" : "OLDEST_FIRST",
         rows: data.map(fmt),
-        cursor_next: toBase64(JSON.stringify({ lastSeen: String(nextLastSeen), sort: "NEWEST_FIRST" })),
-        cursor_prev: toBase64(JSON.stringify({ lastSeen: String(prevLastSeen), sort: "OLDEST_FIRST" })),
+        cursor_next: toBase64(JSON.stringify({ lastSeen: String(nextLastSeen), sort: nextDirection })),
+        cursor_prev: toBase64(JSON.stringify({ lastSeen: String(prevLastSeen), sort: prevDirection })),
       });
     },
   })

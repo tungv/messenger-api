@@ -63,7 +63,7 @@ describe("create new message", () => {
       newestCursor = res.json.mock.calls[0][0].cursor_next;
     });
 
-    it("should query newer messages when messages are created", async () => {
+    it("should return empty if no new messages are created", async () => {
       // when no messages are created
       const [req, res] = getReqRes({
         method: "GET",
@@ -77,11 +77,48 @@ describe("create new message", () => {
         rows: [],
         sort: "NEWEST_FIRST",
         cursor_next: toBase64(JSON.stringify({ lastSeen: String(messages[9].id), sort: "NEWEST_FIRST" })),
-        cursor_prev: toBase64(JSON.stringify({ lastSeen: String(messages[5].id), sort: "OLDEST_FIRST" })),
+        cursor_prev: toBase64(JSON.stringify({ lastSeen: String(messages[9].id), sort: "OLDEST_FIRST" })),
       });
     });
 
-    it.skip("should query older messages using cursor", async () => {});
+    it("should return new messages that are created after the last time", async () => {
+      const m1 = await createMessage("1", "1", "hello this is newer 1");
+      const m2 = await createMessage("1", "1", "hello this is newer 2");
+
+      const [req, res] = getReqRes({
+        method: "GET",
+        query: { accountId: "1", conversationId: "1", pageSize: "5", cursor: newestCursor },
+      });
+
+      await handler(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        rows: [m2, m1],
+        sort: "NEWEST_FIRST",
+        cursor_next: toBase64(JSON.stringify({ lastSeen: String(m2.id), sort: "NEWEST_FIRST" })),
+        cursor_prev: toBase64(JSON.stringify({ lastSeen: String(m1.id), sort: "OLDEST_FIRST" })),
+      });
+
+      newestCursor = res.json.mock.calls[0][0].cursor_next;
+    });
+
+    it("should query older messages using cursor_prev", async () => {
+      const [req, res] = getReqRes({
+        method: "GET",
+        query: { accountId: "1", conversationId: "1", pageSize: "5", cursor: oldestCursor },
+      });
+
+      await handler(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        rows: messages.slice(0, 5),
+        sort: "OLDEST_FIRST",
+        cursor_next: toBase64(JSON.stringify({ lastSeen: String(messages[0].id), sort: "OLDEST_FIRST" })),
+        cursor_prev: toBase64(JSON.stringify({ lastSeen: String(messages[4].id), sort: "NEWEST_FIRST" })),
+      });
+    });
   });
 });
 
