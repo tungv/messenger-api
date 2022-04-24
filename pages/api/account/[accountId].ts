@@ -1,21 +1,30 @@
-import { getAccountById, init } from "data/repository";
-import { NextApiRequest, NextApiResponse } from "next";
+import { getClient } from "components/server/supabase";
+import withDefaultDb from "components/server/withDb";
+import withMethods from "components/server/withMethods";
+import { User } from "types/api";
 
-export default function AccountAPI(req: NextApiRequest, res: NextApiResponse) {
-  switch (req.method) {
-    case "GET":
-      return getAccount(req, res);
-    default:
-      return res.status(405).end(`Method ${req.method} Not Allowed`);
-  }
-}
+export default withDefaultDb(
+  withMethods({
+    async GET(req, res) {
+      const accountId = req.query.accountId as string;
+      const supabase = getClient();
 
-// next handler to get account from query.accountId
-async function getAccount(req: NextApiRequest, res: NextApiResponse) {
-  await init();
+      const { data, error } = await supabase.from<User>("accounts").select(`id,name`).eq("id", accountId).single();
 
-  const accountId = req.query.accountId as string;
-  const account = await getAccountById(accountId);
+      if (!data) {
+        console.log(error);
+        res.status(500).json({ error });
+        return;
+      }
 
-  return res.status(200).json(account);
+      res.status(200).json(fmt(data));
+    },
+  })
+);
+
+function fmt(user: User) {
+  return {
+    id: String(user.id),
+    name: user.name,
+  };
 }
