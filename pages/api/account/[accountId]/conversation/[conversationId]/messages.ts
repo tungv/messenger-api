@@ -65,8 +65,23 @@ export default withDefaultDb(
 
       const supabase = getClient();
 
+      const maybeCursor = Maybe(req.query.cursor as string);
+
+      const maybeParsedCursor = maybeCursor.map((cursor) => fromBase64(cursor) as { lastSeen: string; sort: string });
+
+      const maybeSort = maybeParsedCursor.map((cursor) => cursor.sort);
+      const maybeLastSeen = maybeParsedCursor.map((cursor) => Number.parseInt(cursor.lastSeen));
+
+      const sort = maybeSort.map((s) => (s === "NEWEST_FIRST" ? { ascending: false } : { ascending: true }))[0] || {
+        ascending: false,
+      };
+
+      const condition = maybeLastSeen.map((lastSeen) => {
+        return ["gt" as const, lastSeen] as const;
+      })[0] || ["gt", 0];
+
       // fetch message
-      const { data, error } = await supabase
+      const query = supabase
         .from<QueriedMessage & { conversationId: string }>("messages")
         .select(
           `
@@ -80,10 +95,11 @@ export default withDefaultDb(
           `
         )
         .eq("conversationId", conversationId)
-        .order("createdAt", {
-          ascending: false,
-        })
-        .limit(Number.parseInt(pageSize));
+        .order("createdAt", sort);
+
+      query[condition[0]]("id", condition[1]);
+
+      const { data, error } = await query.limit(Number.parseInt(pageSize));
 
       if (!data) {
         console.error(error);
@@ -91,11 +107,14 @@ export default withDefaultDb(
         return;
       }
 
+      const nextLastSeen = data[0] ? data[0].id : maybeLastSeen[0] || 0;
+      const prevLastSeen = data[0] ? data[data.length - 1].id : maybeLastSeen[0] || 0;
+
       res.status(200).json({
         sort: "NEWEST_FIRST",
         rows: data.map(fmt),
-        cursor_next: toBase64(JSON.stringify({ lastSeen: String(data[0].id), sort: "NEWEST_FIRST" })),
-        cursor_prev: toBase64(JSON.stringify({ lastSeen: String(data[data.length - 1].id), sort: "OLDEST_FIRST" })),
+        cursor_next: toBase64(JSON.stringify({ lastSeen: String(nextLastSeen), sort: "NEWEST_FIRST" })),
+        cursor_prev: toBase64(JSON.stringify({ lastSeen: String(prevLastSeen), sort: "OLDEST_FIRST" })),
       });
     },
   })
@@ -118,4 +137,17 @@ function fmt(message: QueriedMessage): Message {
       name: message.sendBy.name,
     },
   };
+}
+
+function fromBase64(base64: string) {
+  return JSON.parse(Buffer.from(base64, "base64").toString());
+}
+
+function Maybe<T>(nullable: T | null): MaybeType<T> {
+  return nullable == null ? ([] as const) : ([nullable] as const);
+}
+
+interface MaybeType<T> {
+  map: <U>(fn: (t: T) => U) => MaybeType<U>;
+  [index: number]: T | undefined;
 }
