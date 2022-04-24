@@ -1,56 +1,121 @@
-import type { NextApiRequest, NextApiResponse } from "next";
+import withMethods from "components/server/withMethods";
+import { nanoid } from "nanoid";
+import withDefaultDb from "components/server/withDb";
+import { getClient } from "components/server/supabase";
+import { MessageDoc } from "data";
+import { Message } from "types/api";
+import { toBase64 } from "components/toBase64";
 
-import * as repository from "data/repository";
+export default withDefaultDb(
+  withMethods({
+    async POST(req, res) {
+      // create new message and push it to supabase table "messages"
+      const accountId = req.query.accountId as string;
+      const conversationId = req.query.conversationId as string;
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  switch (req.method) {
-    case "GET":
-      return getMessages();
-    case "POST":
-      return createMessage();
-    default:
-      return res.status(405).end(`Method ${req.method} Not Allowed`);
-  }
+      const text = req.body.text as string;
 
-  async function getMessages() {
-    await repository.init();
+      const newMessage = {
+        text,
+        sentBy: accountId,
+        conversationId,
+      };
 
-    try {
-      let { conversationId, pageSize, sort, cursor } = req.query;
-      if (sort !== "NEWEST_FIRST" && sort !== "OLDEST_FIRST") {
-        sort = "NEWEST_FIRST";
+      const supabase = getClient();
+
+      const { data, error } = await supabase.from<MessageDoc>("messages").insert([newMessage]);
+
+      if (!data) {
+        res.status(500).json({ error });
+        return;
       }
 
-      const result = await repository.getMessages(
-        conversationId as string,
-        pageSize as string,
-        sort as repository.SORT_INDICATOR,
-        cursor as string
-      );
+      const inserted = data[0];
 
-      return res.status(200).json(result);
-    } catch (error) {
-      return res.status(400).json({ message: error });
-    }
-  }
+      // fetch message
+      const message = await supabase
+        .from<QueriedMessage>("messages")
+        .select(
+          `
+            id,
+            text,
+            createdAt,
+            sendBy:accounts(
+              id,
+              name
+            )
+          `
+        )
+        .eq("id", inserted.id)
+        .single();
 
-  async function createMessage() {
-    await repository.init();
-
-    try {
-      const { conversationId } = req.query;
-      const { text } = req.body;
-      const sentById = req.query.accountId as string;
-
-      if (!sentById || !text || !conversationId) {
-        return res.status(400).json({ message: "Missing required fields" });
+      if (!message.data) {
+        console.error(message.error);
+        res.status(500).json({ error: message.error });
+        return;
       }
 
-      const createdMessage = await repository.createNewMessage(sentById, text, conversationId as string);
+      res.status(201).json(fmt(message.data));
+    },
 
-      return res.status(201).json({ data: createdMessage });
-    } catch (error) {
-      return res.status(400).json({ message: error });
-    }
-  }
+    async GET(req, res) {
+      const conversationId = req.query.conversationId as string;
+
+      const pageSize = req.query.pageSize as string;
+
+      const supabase = getClient();
+
+      // fetch message
+      const { data, error } = await supabase
+        .from<QueriedMessage & { conversationId: string }>("messages")
+        .select(
+          `
+            id,
+            text,
+            createdAt,
+            sendBy:accounts(
+              id,
+              name
+            )
+          `
+        )
+        .eq("conversationId", conversationId)
+        .order("createdAt", {
+          ascending: false,
+        })
+        .limit(Number.parseInt(pageSize));
+
+      if (!data) {
+        console.error(error);
+        res.status(500).json({ error });
+        return;
+      }
+
+      res.status(200).json({
+        sort: "NEWEST_FIRST",
+        rows: data.map(fmt),
+        cursor_next: toBase64(JSON.stringify({ lastSeen: String(data[0].id), sort: "NEWEST_FIRST" })),
+        cursor_prev: toBase64(JSON.stringify({ lastSeen: String(data[data.length - 1].id), sort: "OLDEST_FIRST" })),
+      });
+    },
+  })
+);
+
+interface QueriedMessage {
+  id: number;
+  text: string;
+  createdAt: string;
+  sendBy: { id: string; name: string };
+}
+
+function fmt(message: QueriedMessage): Message {
+  return {
+    id: String(message.id),
+    text: message.text,
+    createdAt: message.createdAt,
+    sender: {
+      id: message.sendBy.id,
+      name: message.sendBy.name,
+    },
+  };
 }
