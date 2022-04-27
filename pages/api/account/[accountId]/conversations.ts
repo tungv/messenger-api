@@ -81,6 +81,14 @@ export default withDefaultDb(
 
       const rows = await Promise.all(conversations.data.map(({ id }) => readConversation(id)));
 
+      if (!rows[0]) {
+        res.status(200).json({
+          rows: [],
+          sort: "NEWEST_FIRST",
+        });
+        return;
+      }
+
       res.status(200).json({
         sort: "NEWEST_FIRST",
         rows,
