@@ -136,7 +136,7 @@ function fmt(message: QueriedMessage): Message {
     text: message.text,
     createdAt: message.createdAt,
     sender: {
-      id: message.sendBy.id,
+      id: String(message.sendBy.id),
       name: message.sendBy.name,
     },
   };

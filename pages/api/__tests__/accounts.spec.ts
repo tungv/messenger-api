@@ -11,16 +11,18 @@ describe("/api/accounts", () => {
       await handler(req, res);
 
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith([
-        {
-          id: "1",
-          name: "Will Smith",
-        },
-        {
-          id: "2",
-          name: "Jada",
-        },
-      ]);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          {
+            id: "1",
+            name: "Will Smith",
+          },
+          {
+            id: "2",
+            name: "Jada",
+          },
+        ])
+      );
     });
   });
 });

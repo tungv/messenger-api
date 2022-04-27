@@ -12,7 +12,7 @@ describe("create new message", () => {
       id: expect.any(String),
       text: "hello",
       sender: {
-        id: 1,
+        id: "1",
         name: "Will Smith",
       },
       createdAt: expect.any(String),
